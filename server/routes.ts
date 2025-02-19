@@ -6,6 +6,7 @@ import { insertResumeSchema } from "@shared/schema";
 import { z } from "zod";
 import { generateContent } from "./ai";
 import { initiatePhonePePayment, verifyPhonePePayment } from "./payments";
+import { chatWithAI } from "./ai";
 
 const generateContentSchema = z.object({
   section: z.string(),
@@ -19,6 +20,18 @@ const updateTemplateSchema = z.object({
 const purchaseSchema = z.object({
   type: z.enum(["template", "subscription"]),
   templateId: z.string().optional(),
+});
+
+const chatMessageSchema = z.object({
+  message: z.string(),
+  resumeState: z.object({
+    content: z.any(),
+    templateId: z.string(),
+  }),
+  chatHistory: z.array(z.object({
+    role: z.enum(["user", "assistant"]),
+    content: z.string(),
+  })),
 });
 
 export async function registerRoutes(app: Express): Promise<Server> {
@@ -167,6 +180,22 @@ export async function registerRoutes(app: Express): Promise<Server> {
       res.redirect("/payment-failed");
     }
   });
+
+  app.post("/api/chat", async (req, res) => {
+    try {
+      const { message, resumeState, chatHistory } = chatMessageSchema.parse(req.body);
+      const result = await chatWithAI(message, resumeState, chatHistory);
+      res.json(result);
+    } catch (err) {
+      if (err instanceof z.ZodError) {
+        res.status(400).json(err.errors);
+      } else {
+        console.error('Chat error:', err);
+        res.status(500).send("Failed to process chat message");
+      }
+    }
+  });
+
 
   const httpServer = createServer(app);
   return httpServer;
