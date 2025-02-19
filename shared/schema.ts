@@ -2,6 +2,22 @@ import { pgTable, text, serial, integer, boolean, json } from "drizzle-orm/pg-co
 import { createInsertSchema } from "drizzle-zod";
 import { z } from "zod";
 
+// Define the resume content schema for proper typing
+export const resumeContentSchema = z.object({
+  personalInfo: z.object({
+    fullName: z.string(),
+    email: z.string(),
+    phone: z.string(),
+    location: z.string(),
+  }),
+  summary: z.string(),
+  experience: z.string(),
+  education: z.string(),
+  skills: z.string(),
+});
+
+export type ResumeContent = z.infer<typeof resumeContentSchema>;
+
 export const users = pgTable("users", {
   id: serial("id").primaryKey(),
   username: text("username").notNull().unique(),
@@ -14,7 +30,7 @@ export const resumes = pgTable("resumes", {
   id: serial("id").primaryKey(),
   userId: integer("user_id").notNull(),
   name: text("name").notNull(),
-  content: json("content").notNull(),
+  content: json("content").$type<ResumeContent>().notNull(),
   templateId: text("template_id").notNull(),
   createdAt: text("created_at").notNull(),
 });

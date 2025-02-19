@@ -12,14 +12,25 @@ import { useToast } from "@/hooks/use-toast";
 import { useAuth } from "@/hooks/use-auth";
 import { PaymentDialog } from "@/components/payment-dialog";
 
-// Base template component that all other templates will extend
-function BaseTemplate({ content }: { content: Resume["content"] }) {
+// Updated BaseTemplate component
+interface ResumeContent {
+  personalInfo: {
+    fullName: string;
+    email: string;
+    phone: string;
+    location: string;
+  };
+  summary: string;
+  experience: string;
+  education: string;
+  skills: string;
+}
+
+function BaseTemplate({ content }: { content: ResumeContent }) {
   return (
     <div className="max-w-[21cm] mx-auto bg-white p-8 shadow-lg">
       <div className="text-center mb-8">
-        <h1 className="text-3xl font-bold text-gray-900">
-          {content.personalInfo.fullName}
-        </h1>
+        <h1 className="text-3xl font-bold text-gray-900">{content.personalInfo.fullName}</h1>
         <div className="mt-2 text-gray-600 space-y-1">
           <p>{content.personalInfo.email}</p>
           <p>{content.personalInfo.phone}</p>
@@ -38,18 +49,14 @@ function BaseTemplate({ content }: { content: Resume["content"] }) {
         <h2 className="text-xl font-semibold text-gray-900 border-b pb-2 mb-3">
           Experience
         </h2>
-        <div className="text-gray-700 whitespace-pre-wrap">
-          {content.experience}
-        </div>
+        <div className="text-gray-700 whitespace-pre-wrap">{content.experience}</div>
       </div>
 
       <div className="mb-6">
         <h2 className="text-xl font-semibold text-gray-900 border-b pb-2 mb-3">
           Education
         </h2>
-        <div className="text-gray-700 whitespace-pre-wrap">
-          {content.education}
-        </div>
+        <div className="text-gray-700 whitespace-pre-wrap">{content.education}</div>
       </div>
 
       <div>

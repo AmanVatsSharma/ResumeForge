@@ -12,7 +12,7 @@ import { Loader2, ChevronLeft, Download, Wand2 } from "lucide-react";
 import { useForm } from "react-hook-form";
 import { useMutation } from "@tanstack/react-query";
 import { apiRequest } from "@/lib/queryClient";
-import { insertResumeSchema } from "@shared/schema";
+import { insertResumeSchema, type ResumeContent } from "@shared/schema";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { Link } from "wouter";
 import { generateContent } from "@/lib/ai-service";
@@ -21,24 +21,13 @@ import { ResizablePanelGroup, ResizablePanel } from "@/components/ui/resizable";
 
 type FormData = {
   name: string;
-  content: {
-    personalInfo: {
-      fullName: string;
-      email: string;
-      phone: string;
-      location: string;
-    };
-    experience: string;
-    education: string;
-    skills: string;
-    summary: string;
-  };
+  content: ResumeContent;
 };
 
-type Message = {
+interface Message {
   role: "user" | "assistant";
   content: string;
-};
+}
 
 export default function GeneratorPage() {
   const { user } = useAuth();
@@ -69,11 +58,12 @@ export default function GeneratorPage() {
   const createResumeMutation = useMutation({
     mutationFn: async (data: FormData) => {
       const templateId = new URLSearchParams(window.location.search).get("template") || "modern-1";
-      return apiRequest("POST", "/api/resumes", {
+      const response = await apiRequest("POST", "/api/resumes", {
         name: data.name,
         content: data.content,
         templateId,
       });
+      return response.json();
     },
     onSuccess: () => {
       toast({
@@ -91,12 +81,12 @@ export default function GeneratorPage() {
     },
   });
 
-  const generateWithAI = async (section: string) => {
+  const generateWithAI = async (section: keyof Omit<ResumeContent, "personalInfo">) => {
     setIsGenerating(true);
     try {
-      const currentContent = form.getValues(`content.${section}`) as string;
+      const currentContent = form.getValues(`content.${section}`);
       const content = await generateContent(section, currentContent);
-      form.setValue(`content.${section}` as any, content);
+      form.setValue(`content.${section}`, content);
     } catch (error) {
       toast({
         title: "Generation failed",
@@ -127,7 +117,7 @@ export default function GeneratorPage() {
 
       if (result.updates?.content) {
         Object.entries(result.updates.content).forEach(([key, value]) => {
-          form.setValue(`content.${key}` as any, value as string);
+          form.setValue(`content.${key as keyof ResumeContent}`, value);
         });
         toast({
           title: "Resume updated",
@@ -265,7 +255,7 @@ export default function GeneratorPage() {
                             <div className="flex justify-end">
                               <Button
                                 variant="outline"
-                                onClick={() => generateWithAI(section)}
+                                onClick={() => generateWithAI(section as keyof Omit<ResumeContent, "personalInfo">)}
                                 disabled={isGenerating}
                               >
                                 {isGenerating ? (
@@ -278,7 +268,7 @@ export default function GeneratorPage() {
                             </div>
                             <FormField
                               control={form.control}
-                              name={`content.${section}`}
+                              name={`content.${section}` as const}
                               render={({ field }) => (
                                 <FormItem>
                                   <FormControl>
@@ -309,15 +299,6 @@ export default function GeneratorPage() {
           </ResizablePanel>
         </ResizablePanelGroup>
       </main>
-      {/* PaymentDialog is added here, assuming it's needed.  Its definition is not provided in the original or edited code. */}
-      <PaymentDialog
-        open={showPremiumDialog}
-        onOpenChange={setShowPremiumDialog}
-        type="template"
-        templateId={selectedTemplateId || undefined}
-        name={selectedTemplate?.name || ""}
-        price={selectedTemplate?.price || 0}
-      />
     </div>
   );
 }
