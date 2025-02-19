@@ -10,11 +10,11 @@ export interface IStorage {
   createUser(user: InsertUser): Promise<User>;
   updateUserGenerationCount(userId: number): Promise<void>;
   updateUserPremiumStatus(userId: number, isPremium: boolean): Promise<void>;
-  
-  createResume(userId: number, resume: InsertResume): Promise<Resume>;
+
+  createResume(userId: number | null, resume: InsertResume): Promise<Resume>;
   getResume(id: number): Promise<Resume | undefined>;
-  getUserResumes(userId: number): Promise<Resume[]>;
-  
+  getUserResumes(userId: number | null): Promise<Resume[]>;
+
   sessionStore: session.Store;
 }
 
@@ -73,12 +73,12 @@ export class MemStorage implements IStorage {
     }
   }
 
-  async createResume(userId: number, insertResume: InsertResume): Promise<Resume> {
+  async createResume(userId: number | null, insertResume: InsertResume): Promise<Resume> {
     const id = this.currentResumeId++;
     const resume: Resume = {
       ...insertResume,
       id,
-      userId,
+      userId: userId || 0, // Use 0 for anonymous users
       createdAt: new Date().toISOString(),
     };
     this.resumes.set(id, resume);
@@ -89,9 +89,9 @@ export class MemStorage implements IStorage {
     return this.resumes.get(id);
   }
 
-  async getUserResumes(userId: number): Promise<Resume[]> {
+  async getUserResumes(userId: number | null): Promise<Resume[]> {
     return Array.from(this.resumes.values()).filter(
-      (resume) => resume.userId === userId,
+      (resume) => resume.userId === (userId || 0),
     );
   }
 }

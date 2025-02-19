@@ -5,13 +5,15 @@ import { Redirect, Route } from "wouter";
 export function ProtectedRoute({
   path,
   component: Component,
+  requireAuth = true,
 }: {
   path: string;
   component: () => React.JSX.Element;
+  requireAuth?: boolean;
 }) {
   const { user, isLoading } = useAuth();
 
-  if (isLoading) {
+  if (isLoading && requireAuth) {
     return (
       <Route path={path}>
         <div className="flex items-center justify-center min-h-screen">
@@ -21,7 +23,7 @@ export function ProtectedRoute({
     );
   }
 
-  if (!user) {
+  if (!user && requireAuth) {
     return (
       <Route path={path}>
         <Redirect to="/auth" />
@@ -29,5 +31,5 @@ export function ProtectedRoute({
     );
   }
 
-  return <Component />
+  return <Route path={path} component={Component} />;
 }

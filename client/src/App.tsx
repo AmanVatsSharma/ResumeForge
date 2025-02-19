@@ -13,9 +13,9 @@ import { AuthProvider } from "@/hooks/use-auth";
 function Router() {
   return (
     <Switch>
-      <ProtectedRoute path="/" component={HomePage} />
-      <ProtectedRoute path="/templates" component={TemplatesPage} />
-      <ProtectedRoute path="/generator" component={GeneratorPage} />
+      <Route path="/" component={HomePage} />
+      <Route path="/templates" component={TemplatesPage} />
+      <Route path="/generator" component={GeneratorPage} />
       <Route path="/auth" component={AuthPage} />
       <Route component={NotFound} />
     </Switch>

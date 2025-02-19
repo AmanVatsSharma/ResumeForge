@@ -16,15 +16,26 @@ export async function registerRoutes(app: Express): Promise<Server> {
 
   // AI content generation endpoint
   app.post("/api/ai/generate", async (req, res) => {
-    if (!req.isAuthenticated()) return res.sendStatus(401);
+    // Get generation count from session for anonymous users
+    const generationCount = req.session.generationCount || 0;
+    const user = req.user;
 
-    if (!req.user.isPremium && req.user.generationCount >= 2) {
-      return res.status(403).send("Free tier limit reached");
+    // Check if user has exceeded free tier limit
+    if (!user?.isPremium && generationCount >= 2) {
+      return res.status(403).send("Free tier limit reached. Please sign up for premium.");
     }
 
     try {
       const { section, prompt } = generateContentSchema.parse(req.body);
       const content = await generateContent({ section, prompt });
+
+      // Increment generation count for anonymous users
+      if (!user) {
+        req.session.generationCount = generationCount + 1;
+      } else {
+        await storage.updateUserGenerationCount(user.id);
+      }
+
       res.json({ content });
     } catch (err) {
       if (err instanceof z.ZodError) {
@@ -38,23 +49,31 @@ export async function registerRoutes(app: Express): Promise<Server> {
 
   // Get all user's resumes
   app.get("/api/resumes", async (req, res) => {
-    if (!req.isAuthenticated()) return res.sendStatus(401);
-    const resumes = await storage.getUserResumes(req.user.id);
+    const userId = req.user?.id || null;
+    const resumes = await storage.getUserResumes(userId);
     res.json(resumes);
   });
 
   // Create a new resume
   app.post("/api/resumes", async (req, res) => {
-    if (!req.isAuthenticated()) return res.sendStatus(401);
+    const generationCount = req.session.generationCount || 0;
+    const user = req.user;
 
-    if (!req.user.isPremium && req.user.generationCount >= 2) {
-      return res.status(403).send("Free tier limit reached");
+    if (!user?.isPremium && generationCount >= 2) {
+      return res.status(403).send("Free tier limit reached. Please sign up for premium.");
     }
 
     try {
       const data = insertResumeSchema.parse(req.body);
-      const resume = await storage.createResume(req.user.id, data);
-      await storage.updateUserGenerationCount(req.user.id);
+      const resume = await storage.createResume(user?.id || null, data);
+
+      // Increment generation count
+      if (!user) {
+        req.session.generationCount = generationCount + 1;
+      } else {
+        await storage.updateUserGenerationCount(user.id);
+      }
+
       res.status(201).json(resume);
     } catch (err) {
       if (err instanceof z.ZodError) {
@@ -67,11 +86,13 @@ export async function registerRoutes(app: Express): Promise<Server> {
 
   // Get a single resume
   app.get("/api/resumes/:id", async (req, res) => {
-    if (!req.isAuthenticated()) return res.sendStatus(401);
-
     const resume = await storage.getResume(parseInt(req.params.id));
     if (!resume) return res.sendStatus(404);
-    if (resume.userId !== req.user.id) return res.sendStatus(403);
+
+    // Allow access if the resume belongs to anonymous user or the authenticated user
+    if (resume.userId !== 0 && resume.userId !== req.user?.id) {
+      return res.sendStatus(403);
+    }
 
     res.json(resume);
   });
