@@ -11,49 +11,71 @@ const templates = [
     name: "Modern Professional",
     description: "Clean and minimal design with bold section headers",
     premium: false,
+    preview: "minimal-light.svg",  // These would be actual preview images
   },
   {
     id: "executive-1",
     name: "Executive",
     description: "Traditional format optimized for senior positions",
     premium: false,
+    preview: "executive-dark.svg",
   },
   {
     id: "creative-1",
     name: "Creative Portfolio",
     description: "Unique layout for creative professionals",
     premium: true,
+    preview: "creative-color.svg",
   },
   {
     id: "technical-1",
     name: "Technical Specialist",
     description: "Focused on technical skills and projects",
     premium: true,
+    preview: "technical-grid.svg",
   },
   {
     id: "academic-1",
     name: "Academic CV",
     description: "Detailed format for academic positions",
     premium: true,
+    preview: "academic-formal.svg",
   },
   {
     id: "startup-1",
     name: "Startup Profile",
     description: "Modern design for startup environments",
     premium: true,
+    preview: "startup-modern.svg",
   },
   {
     id: "minimal-1",
     name: "Minimal",
     description: "Simple and elegant design",
     premium: false,
+    preview: "minimal-clean.svg",
   },
   {
     id: "professional-2",
     name: "Corporate Professional",
     description: "Traditional corporate style with modern elements",
     premium: true,
+    preview: "corporate-pro.svg",
   },
+  {
+    id: "creative-2",
+    name: "Digital Creative",
+    description: "Modern design for digital professionals",
+    premium: true,
+    preview: "digital-creative.svg",
+  },
+  {
+    id: "minimal-2",
+    name: "Clean Professional",
+    description: "Clean and professional layout",
+    premium: false,
+    preview: "clean-pro.svg",
+  }
 ];
 
 export default function TemplatesPage() {
@@ -81,7 +103,7 @@ export default function TemplatesPage() {
               <Card key={template.id} className="overflow-hidden">
                 <CardHeader className="relative">
                   <div className="aspect-[210/297] bg-gray-100 rounded-md flex items-center justify-center">
-                    <Palette className="h-12 w-12 text-gray-400" />
+                    <img src={template.preview} alt={`${template.name} Preview`} className="h-full w-full object-contain"/>
                   </div>
                   {template.premium && (
                     <div className="absolute top-3 right-3">

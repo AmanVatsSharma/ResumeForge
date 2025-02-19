@@ -9,6 +9,7 @@ import TemplatesPage from "@/pages/templates-page";
 import GeneratorPage from "@/pages/generator-page";
 import { ProtectedRoute } from "./lib/protected-route";
 import { AuthProvider } from "@/hooks/use-auth";
+import ResumePage from "@/pages/resume-page"; // Import the ResumePage component
 
 function Router() {
   return (
@@ -16,6 +17,7 @@ function Router() {
       <Route path="/" component={HomePage} />
       <Route path="/templates" component={TemplatesPage} />
       <Route path="/generator" component={GeneratorPage} />
+      <Route path="/resume/:id" component={ResumePage} />
       <Route path="/auth" component={AuthPage} />
       <Route component={NotFound} />
     </Switch>
