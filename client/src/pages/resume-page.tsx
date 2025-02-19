@@ -4,13 +4,13 @@ import { Resume } from "@shared/schema";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
-import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 import { ChevronLeft, Download, Share2, Crown } from "lucide-react";
 import { Link } from "wouter";
 import { apiRequest, queryClient } from "@/lib/queryClient";
 import { useState } from "react";
 import { useToast } from "@/hooks/use-toast";
 import { useAuth } from "@/hooks/use-auth";
+import { PaymentDialog } from "@/components/payment-dialog";
 
 // Base template component that all other templates will extend
 function BaseTemplate({ content }: { content: Resume["content"] }) {
@@ -233,39 +233,14 @@ export default function ResumePage() {
         </Card>
       </main>
 
-      <Dialog open={showPremiumDialog} onOpenChange={setShowPremiumDialog}>
-        <DialogContent>
-          <DialogHeader>
-            <DialogTitle>Premium Template</DialogTitle>
-            <DialogDescription>
-              {selectedTemplate && (
-                <>
-                  <p className="mb-4">
-                    "{selectedTemplate.name}" is a premium template available for ₹{selectedTemplate.price}.
-                  </p>
-                  <p>
-                    Upgrade to access this template and all other premium features!
-                  </p>
-                </>
-              )}
-            </DialogDescription>
-          </DialogHeader>
-          <DialogFooter>
-            <Button variant="outline" onClick={() => setShowPremiumDialog(false)}>
-              Cancel
-            </Button>
-            <Button onClick={() => {
-              // TODO: Implement payment flow
-              toast({
-                title: "Coming soon",
-                description: "Payment integration is under development",
-              });
-            }}>
-              Purchase (₹{selectedTemplate?.price})
-            </Button>
-          </DialogFooter>
-        </DialogContent>
-      </Dialog>
+      <PaymentDialog
+        open={showPremiumDialog}
+        onOpenChange={setShowPremiumDialog}
+        type="template"
+        templateId={selectedTemplateId || undefined}
+        name={selectedTemplate?.name || ""}
+        price={selectedTemplate?.price || 0}
+      />
     </div>
   );
 }

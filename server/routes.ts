@@ -5,6 +5,7 @@ import { storage } from "./storage";
 import { insertResumeSchema } from "@shared/schema";
 import { z } from "zod";
 import { generateContent } from "./ai";
+import { initiatePhonePePayment, verifyPhonePePayment } from "./payments";
 
 const generateContentSchema = z.object({
   section: z.string(),
@@ -13,6 +14,11 @@ const generateContentSchema = z.object({
 
 const updateTemplateSchema = z.object({
   templateId: z.string(),
+});
+
+const purchaseSchema = z.object({
+  type: z.enum(["template", "subscription"]),
+  templateId: z.string().optional(),
 });
 
 export async function registerRoutes(app: Express): Promise<Server> {
@@ -104,6 +110,61 @@ export async function registerRoutes(app: Express): Promise<Server> {
       } else {
         throw err;
       }
+    }
+  });
+
+  // Initiate payment
+  app.post("/api/payments/initiate", async (req, res) => {
+    if (!req.user) {
+      return res.status(401).send("Authentication required");
+    }
+
+    try {
+      const { type, templateId } = purchaseSchema.parse(req.body);
+      let amount = 0;
+
+      if (type === "subscription") {
+        amount = 999; // ₹999 for premium subscription
+      } else if (type === "template" && templateId) {
+        // Get template price based on templateId
+        const templates: Record<string, number> = {
+          "creative-1": 99,
+          "technical-1": 199,
+          "academic-1": 299,
+        };
+        amount = templates[templateId] || 99;
+      }
+
+      const payment = await initiatePhonePePayment(req.user.id, { type, amount, templateId });
+      res.json(payment);
+    } catch (err) {
+      if (err instanceof z.ZodError) {
+        res.status(400).json(err.errors);
+      } else {
+        console.error('Payment initiation error:', err);
+        res.status(500).send("Failed to initiate payment");
+      }
+    }
+  });
+
+  // Payment callback
+  app.post("/api/payments/callback", async (req, res) => {
+    try {
+      const { merchantId, transactionId } = req.body;
+      const result = await verifyPhonePePayment(transactionId, merchantId);
+
+      if (result.success) {
+        // Extract user ID from merchant reference
+        const userId = parseInt(req.body.merchantUserId);
+        await storage.updateUserPremiumStatus(userId, true);
+
+        res.redirect("/payment-success");
+      } else {
+        res.redirect("/payment-failed");
+      }
+    } catch (err) {
+      console.error('Payment callback error:', err);
+      res.redirect("/payment-failed");
     }
   });
 

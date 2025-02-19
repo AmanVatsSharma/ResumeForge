@@ -5,10 +5,13 @@ import { Link } from "wouter";
 import { useQuery } from "@tanstack/react-query";
 import { Resume } from "@shared/schema";
 import { FileText, Plus, Settings } from "lucide-react";
+import { PaymentDialog } from "@/components/payment-dialog";
+import { useState } from "react";
 
 export default function HomePage() {
   const { user, logoutMutation } = useAuth();
   const { data: resumes } = useQuery<Resume[]>({ queryKey: ["/api/resumes"] });
+  const [showPremiumDialog, setShowPremiumDialog] = useState(false);
 
   return (
     <div className="min-h-screen bg-gray-50">
@@ -90,13 +93,26 @@ export default function HomePage() {
                   {user?.isPremium ? "∞" : "2"}
                 </p>
                 {!user?.isPremium && (
-                  <Button className="w-full">Upgrade to Premium</Button>
+                  <Button
+                    className="w-full"
+                    onClick={() => setShowPremiumDialog(true)}
+                  >
+                    Upgrade to Premium
+                  </Button>
                 )}
               </div>
             </CardContent>
           </Card>
         </div>
       </main>
+
+      <PaymentDialog
+        open={showPremiumDialog}
+        onOpenChange={setShowPremiumDialog}
+        type="subscription"
+        name="Premium Subscription"
+        price={999}
+      />
     </div>
   );
 }
