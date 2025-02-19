@@ -14,6 +14,7 @@ export interface IStorage {
   createResume(userId: number | null, resume: InsertResume): Promise<Resume>;
   getResume(id: number): Promise<Resume | undefined>;
   getUserResumes(userId: number | null): Promise<Resume[]>;
+  updateResumeTemplate(id: number, templateId: string): Promise<Resume>;
 
   sessionStore: session.Store;
 }
@@ -93,6 +94,20 @@ export class MemStorage implements IStorage {
     return Array.from(this.resumes.values()).filter(
       (resume) => resume.userId === (userId || 0),
     );
+  }
+
+  async updateResumeTemplate(id: number, templateId: string): Promise<Resume> {
+    const resume = await this.getResume(id);
+    if (!resume) {
+      throw new Error("Resume not found");
+    }
+
+    const updatedResume = {
+      ...resume,
+      templateId,
+    };
+    this.resumes.set(id, updatedResume);
+    return updatedResume;
   }
 }
 

@@ -1,30 +1,21 @@
 import { useParams } from "wouter";
-import { useQuery } from "@tanstack/react-query";
+import { useQuery, useMutation } from "@tanstack/react-query";
 import { Resume } from "@shared/schema";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
-import { ChevronLeft, Download, Share2 } from "lucide-react";
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
+import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle } from "@/components/ui/dialog";
+import { ChevronLeft, Download, Share2, Crown } from "lucide-react";
 import { Link } from "wouter";
+import { apiRequest, queryClient } from "@/lib/queryClient";
+import { useState } from "react";
+import { useToast } from "@/hooks/use-toast";
+import { useAuth } from "@/hooks/use-auth";
 
-const templates = {
-  "modern-1": {
-    name: "Modern Professional",
-    component: ModernTemplate,
-  },
-  "executive-1": {
-    name: "Executive",
-    component: ModernTemplate, // Fallback to modern for now
-  },
-  "minimal-1": {
-    name: "Minimal",
-    component: ModernTemplate, // Fallback to modern for now
-  },
-};
-
-function ModernTemplate({ content }: { content: Resume["content"] }) {
+// Base template component that all other templates will extend
+function BaseTemplate({ content }: { content: Resume["content"] }) {
   return (
     <div className="max-w-[21cm] mx-auto bg-white p-8 shadow-lg">
-      {/* Personal Info Section */}
       <div className="text-center mb-8">
         <h1 className="text-3xl font-bold text-gray-900">
           {content.personalInfo.fullName}
@@ -36,7 +27,6 @@ function ModernTemplate({ content }: { content: Resume["content"] }) {
         </div>
       </div>
 
-      {/* Summary Section */}
       <div className="mb-6">
         <h2 className="text-xl font-semibold text-gray-900 border-b pb-2 mb-3">
           Professional Summary
@@ -44,7 +34,6 @@ function ModernTemplate({ content }: { content: Resume["content"] }) {
         <p className="text-gray-700 whitespace-pre-wrap">{content.summary}</p>
       </div>
 
-      {/* Experience Section */}
       <div className="mb-6">
         <h2 className="text-xl font-semibold text-gray-900 border-b pb-2 mb-3">
           Experience
@@ -54,7 +43,6 @@ function ModernTemplate({ content }: { content: Resume["content"] }) {
         </div>
       </div>
 
-      {/* Education Section */}
       <div className="mb-6">
         <h2 className="text-xl font-semibold text-gray-900 border-b pb-2 mb-3">
           Education
@@ -64,7 +52,6 @@ function ModernTemplate({ content }: { content: Resume["content"] }) {
         </div>
       </div>
 
-      {/* Skills Section */}
       <div>
         <h2 className="text-xl font-semibold text-gray-900 border-b pb-2 mb-3">
           Skills
@@ -75,11 +62,98 @@ function ModernTemplate({ content }: { content: Resume["content"] }) {
   );
 }
 
+// Define all template components before the templates object
+const ModernTemplate = BaseTemplate;
+const ExecutiveTemplate = BaseTemplate;
+const CreativeTemplate = BaseTemplate;
+const TechnicalTemplate = BaseTemplate;
+const AcademicTemplate = BaseTemplate;
+const MinimalTemplate = BaseTemplate;
+
+// Template definitions with their configurations
+const templates = {
+  "modern-1": {
+    name: "Modern Professional",
+    component: ModernTemplate,
+    premium: false,
+    price: 0,
+  },
+  "executive-1": {
+    name: "Executive",
+    component: ExecutiveTemplate,
+    premium: false,
+    price: 0,
+  },
+  "creative-1": {
+    name: "Creative Portfolio",
+    component: CreativeTemplate,
+    premium: true,
+    price: 99,
+  },
+  "technical-1": {
+    name: "Technical Specialist",
+    component: TechnicalTemplate,
+    premium: true,
+    price: 199,
+  },
+  "academic-1": {
+    name: "Academic CV",
+    component: AcademicTemplate,
+    premium: true,
+    price: 299,
+  },
+  "minimal-1": {
+    name: "Minimal",
+    component: MinimalTemplate,
+    premium: false,
+    price: 0,
+  }
+};
+
 export default function ResumePage() {
   const { id } = useParams();
+  const { toast } = useToast();
+  const { user } = useAuth();
+  const [showPremiumDialog, setShowPremiumDialog] = useState(false);
+  const [selectedTemplateId, setSelectedTemplateId] = useState<string | null>(null);
+
   const { data: resume, isLoading } = useQuery<Resume>({
     queryKey: [`/api/resumes/${id}`],
   });
+
+  const updateTemplateMutation = useMutation({
+    mutationFn: async (templateId: string) => {
+      const res = await apiRequest("PATCH", `/api/resumes/${id}/template`, {
+        templateId,
+      });
+      return await res.json();
+    },
+    onSuccess: (updatedResume) => {
+      queryClient.setQueryData([`/api/resumes/${id}`], updatedResume);
+      toast({
+        title: "Template updated",
+        description: "Your resume template has been updated successfully",
+      });
+    },
+    onError: (error: Error) => {
+      toast({
+        title: "Failed to update template",
+        description: error.message,
+        variant: "destructive",
+      });
+    },
+  });
+
+  const handleTemplateChange = (templateId: string) => {
+    const template = templates[templateId as keyof typeof templates];
+
+    if (template.premium && !user?.isPremium) {
+      setSelectedTemplateId(templateId);
+      setShowPremiumDialog(true);
+    } else {
+      updateTemplateMutation.mutate(templateId);
+    }
+  };
 
   if (isLoading) {
     return (
@@ -101,6 +175,8 @@ export default function ResumePage() {
   }
 
   const Template = templates[resume.templateId as keyof typeof templates]?.component || ModernTemplate;
+  const currentTemplate = templates[resume.templateId as keyof typeof templates];
+  const selectedTemplate = selectedTemplateId ? templates[selectedTemplateId as keyof typeof templates] : null;
 
   return (
     <div className="min-h-screen bg-gray-50">
@@ -115,7 +191,27 @@ export default function ResumePage() {
               </Button>
               <h1 className="text-2xl font-bold text-gray-900">{resume.name}</h1>
             </div>
-            <div className="flex gap-2">
+            <div className="flex items-center gap-4">
+              <Select
+                value={resume.templateId}
+                onValueChange={handleTemplateChange}
+              >
+                <SelectTrigger className="w-[200px]">
+                  <SelectValue placeholder="Choose template" />
+                </SelectTrigger>
+                <SelectContent>
+                  {Object.entries(templates).map(([id, template]) => (
+                    <SelectItem key={id} value={id}>
+                      <div className="flex items-center justify-between w-full">
+                        <span>{template.name}</span>
+                        {template.premium && !user?.isPremium && (
+                          <Crown className="h-4 w-4 text-yellow-400" />
+                        )}
+                      </div>
+                    </SelectItem>
+                  ))}
+                </SelectContent>
+              </Select>
               <Button variant="outline" disabled>
                 <Share2 className="mr-2 h-4 w-4" />
                 Share
@@ -136,6 +232,40 @@ export default function ResumePage() {
           </CardContent>
         </Card>
       </main>
+
+      <Dialog open={showPremiumDialog} onOpenChange={setShowPremiumDialog}>
+        <DialogContent>
+          <DialogHeader>
+            <DialogTitle>Premium Template</DialogTitle>
+            <DialogDescription>
+              {selectedTemplate && (
+                <>
+                  <p className="mb-4">
+                    "{selectedTemplate.name}" is a premium template available for ₹{selectedTemplate.price}.
+                  </p>
+                  <p>
+                    Upgrade to access this template and all other premium features!
+                  </p>
+                </>
+              )}
+            </DialogDescription>
+          </DialogHeader>
+          <DialogFooter>
+            <Button variant="outline" onClick={() => setShowPremiumDialog(false)}>
+              Cancel
+            </Button>
+            <Button onClick={() => {
+              // TODO: Implement payment flow
+              toast({
+                title: "Coming soon",
+                description: "Payment integration is under development",
+              });
+            }}>
+              Purchase (₹{selectedTemplate?.price})
+            </Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
     </div>
   );
 }

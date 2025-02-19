@@ -11,6 +11,10 @@ const generateContentSchema = z.object({
   currentContent: z.string(),
 });
 
+const updateTemplateSchema = z.object({
+  templateId: z.string(),
+});
+
 export async function registerRoutes(app: Express): Promise<Server> {
   setupAuth(app);
 
@@ -78,6 +82,29 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
 
     res.json(resume);
+  });
+
+  // Update resume template
+  app.patch("/api/resumes/:id/template", async (req, res) => {
+    const resume = await storage.getResume(parseInt(req.params.id));
+    if (!resume) return res.sendStatus(404);
+
+    // Allow updates if the resume belongs to anonymous user or the authenticated user
+    if (resume.userId !== 0 && resume.userId !== req.user?.id) {
+      return res.sendStatus(403);
+    }
+
+    try {
+      const { templateId } = updateTemplateSchema.parse(req.body);
+      const updatedResume = await storage.updateResumeTemplate(parseInt(req.params.id), templateId);
+      res.json(updatedResume);
+    } catch (err) {
+      if (err instanceof z.ZodError) {
+        res.status(400).json(err.errors);
+      } else {
+        throw err;
+      }
+    }
   });
 
   const httpServer = createServer(app);
