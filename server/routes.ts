@@ -8,34 +8,17 @@ import { generateContent } from "./ai";
 
 const generateContentSchema = z.object({
   section: z.string(),
-  prompt: z.string(),
+  currentContent: z.string(),
 });
 
 export async function registerRoutes(app: Express): Promise<Server> {
   setupAuth(app);
 
-  // AI content generation endpoint
+  // AI content generation endpoint - free for use within resume creation
   app.post("/api/ai/generate", async (req, res) => {
-    // Get generation count from session for anonymous users
-    const generationCount = req.session.generationCount || 0;
-    const user = req.user;
-
-    // Check if user has exceeded free tier limit
-    if (!user?.isPremium && generationCount >= 2) {
-      return res.status(403).send("Free tier limit reached. Please sign up for premium.");
-    }
-
     try {
-      const { section, prompt } = generateContentSchema.parse(req.body);
-      const content = await generateContent({ section, prompt });
-
-      // Increment generation count for anonymous users
-      if (!user) {
-        req.session.generationCount = generationCount + 1;
-      } else {
-        await storage.updateUserGenerationCount(user.id);
-      }
-
+      const { section, currentContent } = generateContentSchema.parse(req.body);
+      const content = await generateContent({ section, currentContent });
       res.json({ content });
     } catch (err) {
       if (err instanceof z.ZodError) {
@@ -54,7 +37,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
     res.json(resumes);
   });
 
-  // Create a new resume
+  // Create a new resume - this counts towards the free tier limit
   app.post("/api/resumes", async (req, res) => {
     const generationCount = req.session.generationCount || 0;
     const user = req.user;
@@ -67,7 +50,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
       const data = insertResumeSchema.parse(req.body);
       const resume = await storage.createResume(user?.id || null, data);
 
-      // Increment generation count
+      // Increment generation count only when saving a complete resume
       if (!user) {
         req.session.generationCount = generationCount + 1;
       } else {

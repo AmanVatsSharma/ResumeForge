@@ -83,19 +83,10 @@ export default function GeneratorPage() {
   });
 
   const generateWithAI = async (section: string) => {
-    if (!user?.isPremium && user?.generationCount! >= 2) {
-      toast({
-        title: "Free tier limit reached",
-        description: "Upgrade to premium for unlimited generations",
-        variant: "destructive",
-      });
-      return;
-    }
-
     setIsGenerating(true);
     try {
-      const prompt = "Please help me write professional content for my resume based on my experience and skills.";
-      const content = await generateContent(section, prompt);
+      const currentContent = form.getValues(`content.${section}`) as string;
+      const content = await generateContent(section, currentContent);
       form.setValue(`content.${section}` as any, content);
     } catch (error) {
       toast({

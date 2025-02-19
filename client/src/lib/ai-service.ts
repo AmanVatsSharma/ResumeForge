@@ -6,7 +6,7 @@ const generateContentSchema = z.object({
 
 type GenerateContentResponse = z.infer<typeof generateContentSchema>;
 
-export async function generateContent(section: string, prompt: string): Promise<string> {
+export async function generateContent(section: string, currentContent: string): Promise<string> {
   try {
     const res = await fetch('/api/ai/generate', {
       method: 'POST',
@@ -15,7 +15,7 @@ export async function generateContent(section: string, prompt: string): Promise<
       },
       body: JSON.stringify({
         section,
-        prompt,
+        currentContent,
       }),
     });
 
