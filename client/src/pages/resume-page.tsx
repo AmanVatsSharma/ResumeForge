@@ -1,6 +1,6 @@
 import { useParams } from "wouter";
 import { useQuery, useMutation } from "@tanstack/react-query";
-import { Resume } from "@shared/schema";
+import { Resume, type ResumeContent } from "@shared/schema";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
@@ -12,20 +12,7 @@ import { useToast } from "@/hooks/use-toast";
 import { useAuth } from "@/hooks/use-auth";
 import { PaymentDialog } from "@/components/payment-dialog";
 
-// Updated BaseTemplate component
-interface ResumeContent {
-  personalInfo: {
-    fullName: string;
-    email: string;
-    phone: string;
-    location: string;
-  };
-  summary: string;
-  experience: string;
-  education: string;
-  skills: string;
-}
-
+// Base template component that all other templates extend from
 function BaseTemplate({ content }: { content: ResumeContent }) {
   return (
     <div className="max-w-[21cm] mx-auto bg-white p-8 shadow-lg">
@@ -115,21 +102,23 @@ const templates = {
     premium: false,
     price: 0,
   }
-};
+} as const;
+
+type TemplateId = keyof typeof templates;
 
 export default function ResumePage() {
   const { id } = useParams();
   const { toast } = useToast();
   const { user } = useAuth();
   const [showPremiumDialog, setShowPremiumDialog] = useState(false);
-  const [selectedTemplateId, setSelectedTemplateId] = useState<string | null>(null);
+  const [selectedTemplateId, setSelectedTemplateId] = useState<TemplateId | null>(null);
 
   const { data: resume, isLoading } = useQuery<Resume>({
     queryKey: [`/api/resumes/${id}`],
   });
 
   const updateTemplateMutation = useMutation({
-    mutationFn: async (templateId: string) => {
+    mutationFn: async (templateId: TemplateId) => {
       const res = await apiRequest("PATCH", `/api/resumes/${id}/template`, {
         templateId,
       });
@@ -151,8 +140,8 @@ export default function ResumePage() {
     },
   });
 
-  const handleTemplateChange = (templateId: string) => {
-    const template = templates[templateId as keyof typeof templates];
+  const handleTemplateChange = (templateId: TemplateId) => {
+    const template = templates[templateId];
 
     if (template.premium && !user?.isPremium) {
       setSelectedTemplateId(templateId);
@@ -181,9 +170,8 @@ export default function ResumePage() {
     );
   }
 
-  const Template = templates[resume.templateId as keyof typeof templates]?.component || ModernTemplate;
-  const currentTemplate = templates[resume.templateId as keyof typeof templates];
-  const selectedTemplate = selectedTemplateId ? templates[selectedTemplateId as keyof typeof templates] : null;
+  const Template = templates[resume.templateId as TemplateId]?.component || ModernTemplate;
+  const selectedTemplate = selectedTemplateId ? templates[selectedTemplateId] : null;
 
   return (
     <div className="min-h-screen bg-gray-50">
@@ -201,7 +189,7 @@ export default function ResumePage() {
             <div className="flex items-center gap-4">
               <Select
                 value={resume.templateId}
-                onValueChange={handleTemplateChange}
+                onValueChange={(value) => handleTemplateChange(value as TemplateId)}
               >
                 <SelectTrigger className="w-[200px]">
                   <SelectValue placeholder="Choose template" />
