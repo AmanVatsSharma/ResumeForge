@@ -15,6 +15,7 @@ import { apiRequest } from "@/lib/queryClient";
 import { insertResumeSchema } from "@shared/schema";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { Link } from "wouter";
+import { generateContent } from "@/lib/ai-service";
 
 type FormData = {
   name: string;
@@ -82,7 +83,7 @@ export default function GeneratorPage() {
   });
 
   const generateWithAI = async (section: string) => {
-    if (!user?.isPremium && user?.generationCount >= 2) {
+    if (!user?.isPremium && user?.generationCount! >= 2) {
       toast({
         title: "Free tier limit reached",
         description: "Upgrade to premium for unlimited generations",
@@ -92,12 +93,19 @@ export default function GeneratorPage() {
     }
 
     setIsGenerating(true);
-    // Simulated AI generation - in real implementation, this would call the AI API
-    setTimeout(() => {
-      const sampleText = `Generated ${section} content would appear here. This is a placeholder for the AI-generated content that would be produced using the Gemini API.`;
-      form.setValue(`content.${section}` as any, sampleText);
+    try {
+      const prompt = "Please help me write professional content for my resume based on my experience and skills.";
+      const content = await generateContent(section, prompt);
+      form.setValue(`content.${section}` as any, content);
+    } catch (error) {
+      toast({
+        title: "Generation failed",
+        description: error instanceof Error ? error.message : "Failed to generate content",
+        variant: "destructive",
+      });
+    } finally {
       setIsGenerating(false);
-    }, 1500);
+    }
   };
 
   return (
