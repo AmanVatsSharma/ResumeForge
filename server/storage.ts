@@ -15,6 +15,7 @@ export interface IStorage {
   getResume(id: number): Promise<Resume | undefined>;
   getUserResumes(userId: number | null): Promise<Resume[]>;
   updateResumeTemplate(id: number, templateId: string): Promise<Resume>;
+  updateResumeContent(id: number, name: string, content: any): Promise<Resume>;
 
   sessionStore: session.Store;
 }
@@ -61,7 +62,7 @@ export class MemStorage implements IStorage {
   async updateUserGenerationCount(userId: number): Promise<void> {
     const user = await this.getUser(userId);
     if (user) {
-      user.generationCount++;
+      user.generationCount += 1;
       this.users.set(userId, user);
     }
   }
@@ -107,6 +108,44 @@ export class MemStorage implements IStorage {
       templateId,
     };
     this.resumes.set(id, updatedResume);
+    return updatedResume;
+  }
+
+  async updateResumeContent(id: number, name: string, content: any): Promise<Resume> {
+    console.log(`[STORAGE] updateResumeContent called for resume ID: ${id}`);
+    console.log(`[STORAGE] Resume exists in storage: ${this.resumes.has(id)}`);
+    
+    const resume = await this.getResume(id);
+    if (!resume) {
+      console.log(`[STORAGE] Resume not found with ID: ${id}`);
+      throw new Error("Resume not found");
+    }
+    
+    console.log(`[STORAGE] Original resume:`, JSON.stringify({
+      id: resume.id,
+      name: resume.name,
+      userId: resume.userId,
+      templateId: resume.templateId,
+      contentKeys: Object.keys(resume.content || {})
+    }, null, 2));
+    
+    const updatedResume = {
+      ...resume,
+      name,
+      content,
+    };
+    
+    console.log(`[STORAGE] Updated resume:`, JSON.stringify({
+      id: updatedResume.id,
+      name: updatedResume.name,
+      userId: updatedResume.userId,
+      templateId: updatedResume.templateId,
+      contentKeys: Object.keys(updatedResume.content || {})
+    }, null, 2));
+    
+    this.resumes.set(id, updatedResume);
+    console.log(`[STORAGE] Resume updated successfully with ID: ${id}`);
+    
     return updatedResume;
   }
 }

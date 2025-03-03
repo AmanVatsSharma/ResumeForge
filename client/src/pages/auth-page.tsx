@@ -10,6 +10,7 @@ import { zodResolver } from "@hookform/resolvers/zod";
 import { insertUserSchema } from "@shared/schema";
 import { useLocation } from "wouter";
 import { useEffect } from "react";
+import { FormControl, FormField, FormItem, FormLabel, FormMessage, Form } from "@/components/ui/form";
 
 export default function AuthPage() {
   const { user, loginMutation, registerMutation } = useAuth();
@@ -38,12 +39,12 @@ export default function AuthPage() {
   }, [user, setLocation]);
 
   return (
-    <div className="min-h-screen bg-gray-50 flex">
+    <div className="min-h-screen bg-gray-50 dark:bg-gray-900 flex">
       <div className="flex-1 flex flex-col justify-center py-12 px-4 sm:px-6 lg:px-20 xl:px-24">
         <div className="mx-auto w-full max-w-sm lg:w-96">
           <div className="text-center mb-8">
-            <h1 className="text-3xl font-bold text-gray-900">Resume Builder</h1>
-            <p className="mt-2 text-sm text-gray-600">
+            <h1 className="text-3xl font-bold text-gray-900 dark:text-white">Resume Builder</h1>
+            <p className="mt-2 text-sm text-gray-600 dark:text-gray-400">
               Create professional resumes with AI assistance
             </p>
           </div>
@@ -57,27 +58,47 @@ export default function AuthPage() {
             <TabsContent value="login">
               <Card>
                 <CardContent className="pt-6">
-                  <form
-                    onSubmit={loginForm.handleSubmit((data) =>
-                      loginMutation.mutate(data),
-                    )}
-                  >
-                    <div className="space-y-4">
-                      <div>
-                        <Label htmlFor="login-username">Username</Label>
-                        <Input
-                          id="login-username"
-                          {...loginForm.register("username")}
-                        />
-                      </div>
-                      <div>
-                        <Label htmlFor="login-password">Password</Label>
-                        <Input
-                          id="login-password"
-                          type="password"
-                          {...loginForm.register("password")}
-                        />
-                      </div>
+                  <Form {...loginForm}>
+                    <form
+                      onSubmit={loginForm.handleSubmit((data) =>
+                        loginMutation.mutate(data),
+                      )}
+                      className="space-y-4"
+                    >
+                      <FormField
+                        control={loginForm.control}
+                        name="username"
+                        render={({ field }) => (
+                          <FormItem>
+                            <FormLabel>Username</FormLabel>
+                            <FormControl>
+                              <Input id="login-username" {...field} />
+                            </FormControl>
+                            <FormMessage />
+                          </FormItem>
+                        )}
+                      />
+                      
+                      <FormField
+                        control={loginForm.control}
+                        name="password"
+                        render={({ field }) => (
+                          <FormItem>
+                            <FormLabel>Password</FormLabel>
+                            <FormControl>
+                              <Input id="login-password" type="password" {...field} />
+                            </FormControl>
+                            <FormMessage />
+                          </FormItem>
+                        )}
+                      />
+                      
+                      {loginMutation.error && (
+                        <div className="text-red-500 text-sm">
+                          {loginMutation.error.message || "Login failed. Please check your credentials."}
+                        </div>
+                      )}
+                      
                       <Button
                         type="submit"
                         className="w-full"
@@ -88,8 +109,8 @@ export default function AuthPage() {
                         )}
                         Login
                       </Button>
-                    </div>
-                  </form>
+                    </form>
+                  </Form>
                 </CardContent>
               </Card>
             </TabsContent>
@@ -97,27 +118,47 @@ export default function AuthPage() {
             <TabsContent value="register">
               <Card>
                 <CardContent className="pt-6">
-                  <form
-                    onSubmit={registerForm.handleSubmit((data) =>
-                      registerMutation.mutate(data),
-                    )}
-                  >
-                    <div className="space-y-4">
-                      <div>
-                        <Label htmlFor="register-username">Username</Label>
-                        <Input
-                          id="register-username"
-                          {...registerForm.register("username")}
-                        />
-                      </div>
-                      <div>
-                        <Label htmlFor="register-password">Password</Label>
-                        <Input
-                          id="register-password"
-                          type="password"
-                          {...registerForm.register("password")}
-                        />
-                      </div>
+                  <Form {...registerForm}>
+                    <form
+                      onSubmit={registerForm.handleSubmit((data) =>
+                        registerMutation.mutate(data),
+                      )}
+                      className="space-y-4"
+                    >
+                      <FormField
+                        control={registerForm.control}
+                        name="username"
+                        render={({ field }) => (
+                          <FormItem>
+                            <FormLabel>Username</FormLabel>
+                            <FormControl>
+                              <Input id="register-username" {...field} />
+                            </FormControl>
+                            <FormMessage />
+                          </FormItem>
+                        )}
+                      />
+                      
+                      <FormField
+                        control={registerForm.control}
+                        name="password"
+                        render={({ field }) => (
+                          <FormItem>
+                            <FormLabel>Password</FormLabel>
+                            <FormControl>
+                              <Input id="register-password" type="password" {...field} />
+                            </FormControl>
+                            <FormMessage />
+                          </FormItem>
+                        )}
+                      />
+                      
+                      {registerMutation.error && (
+                        <div className="text-red-500 text-sm">
+                          {registerMutation.error.message || "Registration failed. Username may already exist."}
+                        </div>
+                      )}
+                      
                       <Button
                         type="submit"
                         className="w-full"
@@ -128,8 +169,8 @@ export default function AuthPage() {
                         )}
                         Register
                       </Button>
-                    </div>
-                  </form>
+                    </form>
+                  </Form>
                 </CardContent>
               </Card>
             </TabsContent>
@@ -139,10 +180,10 @@ export default function AuthPage() {
 
       <div className="hidden lg:block relative flex-1 bg-background">
         <div className="h-full flex flex-col justify-center px-12">
-          <h2 className="text-4xl font-bold text-gray-900 mb-4">
+          <h2 className="text-4xl font-bold text-gray-900 dark:text-white mb-4">
             Create Your Professional Resume
           </h2>
-          <ul className="space-y-4 text-lg text-gray-600">
+          <ul className="space-y-4 text-lg text-gray-600 dark:text-gray-300">
             <li>AI-powered resume generation</li>
             <li>Professional templates</li>
             <li>ATS optimization</li>

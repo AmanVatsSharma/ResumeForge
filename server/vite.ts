@@ -44,8 +44,15 @@ export async function setupVite(app: Express, server: Server) {
   });
 
   app.use(vite.middlewares);
+  
+  // Modify the catch-all route to exclude API routes
   app.use("*", async (req, res, next) => {
     const url = req.originalUrl;
+    
+    // Skip API routes - forward them to the actual API handlers
+    if (url.startsWith('/api')) {
+      return next();
+    }
 
     try {
       const clientTemplate = path.resolve(
@@ -81,8 +88,13 @@ export function serveStatic(app: Express) {
 
   app.use(express.static(distPath));
 
-  // fall through to index.html if the file doesn't exist
-  app.use("*", (_req, res) => {
+  // Modify to exclude API routes
+  app.use("*", (req, res) => {
+    // Skip API routes
+    if (req.originalUrl.startsWith('/api')) {
+      return res.status(404).json({ error: "API endpoint not found" });
+    }
+    
     res.sendFile(path.resolve(distPath, "index.html"));
   });
 }

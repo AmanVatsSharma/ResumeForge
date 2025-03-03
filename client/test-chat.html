@@ -1,0 +1,48 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Chat API Test</title>
+    <style>
+        body { font-family: Arial, sans-serif; max-width: 800px; margin: 0 auto; padding: 20px; }
+        #response { white-space: pre-wrap; background: #f5f5f5; padding: 15px; border-radius: 5px; margin-top: 20px; }
+        button { padding: 10px 20px; background: #4CAF50; color: white; border: none; border-radius: 5px; cursor: pointer; }
+    </style>
+</head>
+<body>
+    <h1>Test Chat API</h1>
+    <button id="testButton">Send Test Message</button>
+    <div id="response"></div>
+
+    <script>
+        document.getElementById('testButton').addEventListener('click', async () => {
+            const responseElement = document.getElementById('response');
+            responseElement.textContent = 'Sending request...';
+            
+            try {
+                const response = await fetch('/api/chat', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json'
+                    },
+                    body: JSON.stringify({
+                        message: 'Hello, can you help with my resume?',
+                        resumeState: {
+                            content: {
+                                summary: 'Professional software developer'
+                            },
+                            templateId: 'modern-1'
+                        },
+                        chatHistory: [],
+                        model: 'gemini'
+                    })
+                });
+                
+                const data = await response.json();
+                responseElement.textContent = 'Response:\n' + JSON.stringify(data, null, 2);
+            } catch (error) {
+                responseElement.textContent = 'Error:\n' + error.message;
+            }
+        });
+    </script>
+</body>
+</html> 

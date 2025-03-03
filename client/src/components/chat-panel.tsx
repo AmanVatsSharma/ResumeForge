@@ -4,28 +4,38 @@ import { Card } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
 import { ScrollArea } from "@/components/ui/scroll-area";
 import { Loader2, Send, Bot } from "lucide-react";
+import { ChatMessage } from "@/lib/ai-service";
 
-interface Message {
-  role: "user" | "assistant";
-  content: string;
-}
-
+/**
+ * Props for the ChatPanel component
+ * @interface ChatPanelProps
+ * @property {(message: string) => Promise<void>} onSend - Function to handle sending messages
+ * @property {boolean} isLoading - Whether a message is currently being processed
+ * @property {ChatMessage[]} messages - Array of chat messages
+ */
 interface ChatPanelProps {
-  onMessage: (message: string) => Promise<void>;
-  isProcessing: boolean;
-  messages: Message[];
+  onSend: (message: string) => Promise<void>;
+  isLoading: boolean;
+  messages: ChatMessage[];
 }
 
-export function ChatPanel({ onMessage, isProcessing, messages }: ChatPanelProps) {
+/**
+ * Chat panel component for interacting with the AI assistant
+ * 
+ * @component
+ * @param {ChatPanelProps} props - The component props
+ * @returns {JSX.Element} The chat panel component
+ */
+export function ChatPanel({ onSend, isLoading, messages }: ChatPanelProps) {
   const [input, setInput] = useState("");
 
-  const handleSubmit = async (e: React.FormEvent) => {
-    e.preventDefault();
-    if (!input.trim() || isProcessing) return;
+  const handleSubmit = async (e?: React.FormEvent) => {
+    if (e) e.preventDefault();
+    if (!input.trim() || isLoading) return;
 
     const message = input.trim();
     setInput("");
-    await onMessage(message);
+    await onSend(message);
   };
 
   return (
@@ -63,23 +73,27 @@ export function ChatPanel({ onMessage, isProcessing, messages }: ChatPanelProps)
         </div>
       </ScrollArea>
 
-      <form onSubmit={handleSubmit} className="p-4 border-t">
+      <div className="p-4 border-t">
         <div className="flex gap-2">
           <Input
             placeholder="Ask me anything about your resume..."
             value={input}
             onChange={(e) => setInput(e.target.value)}
-            disabled={isProcessing}
+            disabled={isLoading}
           />
-          <Button type="submit" disabled={isProcessing}>
-            {isProcessing ? (
+          <Button 
+            type="button" 
+            disabled={isLoading}
+            onClick={handleSubmit}
+          >
+            {isLoading ? (
               <Loader2 className="h-4 w-4 animate-spin" />
             ) : (
               <Send className="h-4 w-4" />
             )}
           </Button>
         </div>
-      </form>
+      </div>
     </Card>
   );
 }

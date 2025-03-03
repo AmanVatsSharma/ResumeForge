@@ -9,16 +9,22 @@ import TemplatesPage from "@/pages/templates-page";
 import GeneratorPage from "@/pages/generator-page";
 import { ProtectedRoute } from "./lib/protected-route";
 import { AuthProvider } from "@/hooks/use-auth";
-import ResumePage from "@/pages/resume-page"; // Import the ResumePage component
+import { ThemeProvider } from "@/hooks/use-theme";
+import ResumePage from "@/pages/resume-page";
+import ShareViewPage from "@/pages/share-view-page";
 
 function Router() {
   return (
     <Switch>
       <Route path="/" component={HomePage} />
-      <Route path="/templates" component={TemplatesPage} />
-      <Route path="/generator" component={GeneratorPage} />
-      <Route path="/resume/:id" component={ResumePage} />
       <Route path="/auth" component={AuthPage} />
+      <Route path="/share/:id" component={ShareViewPage} />
+      
+      {/* Protected Routes - Require Authentication */}
+      <ProtectedRoute path="/templates" component={() => <TemplatesPage />} />
+      <ProtectedRoute path="/generator" component={() => <GeneratorPage />} />
+      <ProtectedRoute path="/resume/:id" component={() => <ResumePage />} />
+      
       <Route component={NotFound} />
     </Switch>
   );
@@ -27,10 +33,12 @@ function Router() {
 function App() {
   return (
     <QueryClientProvider client={queryClient}>
-      <AuthProvider>
-        <Router />
-        <Toaster />
-      </AuthProvider>
+      <ThemeProvider defaultTheme="light" storageKey="resume-forge-theme">
+        <AuthProvider>
+          <Router />
+          <Toaster />
+        </AuthProvider>
+      </ThemeProvider>
     </QueryClientProvider>
   );
 }

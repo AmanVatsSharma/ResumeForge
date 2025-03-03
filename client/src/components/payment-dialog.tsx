@@ -9,19 +9,21 @@ import { apiRequest } from "@/lib/queryClient";
 interface PaymentDialogProps {
   open: boolean;
   onOpenChange: (open: boolean) => void;
-  type: "template" | "subscription";
+  type?: "template" | "subscription";
   templateId?: string;
-  name: string;
-  price: number;
+  name?: string;
+  price?: number;
+  successCallback?: () => void;
 }
 
 export function PaymentDialog({
   open,
   onOpenChange,
-  type,
+  type = "template",
   templateId,
-  name,
-  price,
+  name = "Premium Template",
+  price = 499,
+  successCallback
 }: PaymentDialogProps) {
   const { toast } = useToast();
   const [isLoading, setIsLoading] = useState(false);
@@ -35,8 +37,14 @@ export function PaymentDialog({
       return await res.json();
     },
     onSuccess: (data) => {
-      // Redirect to PhonePe payment page
-      window.location.href = data.paymentUrl;
+      // If there's a success callback, call it (for testing only)
+      if (successCallback) {
+        successCallback();
+        onOpenChange(false);
+      } else {
+        // In real implementation, redirect to payment page
+        window.location.href = data.paymentUrl;
+      }
     },
     onError: (error: Error) => {
       setIsLoading(false);
