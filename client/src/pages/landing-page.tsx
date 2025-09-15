@@ -215,7 +215,7 @@ export default function LandingPage() {
               <ThemeToggle />
               {user ? (
                 <Button asChild>
-                  <Link href="/">Go to Dashboard</Link>
+                  <Link href="/dashboard">Go to Dashboard</Link>
                 </Button>
               ) : (
                 <>
@@ -261,7 +261,7 @@ export default function LandingPage() {
             </p>
             <div className="flex flex-col sm:flex-row gap-4 justify-center mb-12">
               <Button size="lg" className="bg-gradient-to-r from-purple-600 to-blue-600 hover:from-purple-700 hover:to-blue-700" asChild>
-                <Link href="/auth">
+                <Link href={user ? "/dashboard" : "/auth"}>
                   <Rocket className="mr-2 h-5 w-5" />
                   Start Creating Free
                 </Link>
@@ -375,7 +375,7 @@ export default function LandingPage() {
                 </div>
               </div>
               <Button size="lg" className="mt-8 bg-gradient-to-r from-purple-600 to-blue-600 hover:from-purple-700 hover:to-blue-700" asChild>
-                <Link href="/auth">
+                <Link href={user ? "/dashboard" : "/auth"}>
                   Try It Free
                   <ArrowRight className="ml-2 h-5 w-5" />
                 </Link>
@@ -526,7 +526,7 @@ export default function LandingPage() {
                       variant={tier.popular ? 'default' : 'outline'}
                       asChild
                     >
-                      <Link href="/auth">{tier.cta}</Link>
+                      <Link href={user ? "/dashboard" : "/auth"}>{tier.cta}</Link>
                     </Button>
                   </CardContent>
                 </Card>
@@ -553,7 +553,7 @@ export default function LandingPage() {
             </p>
             <div className="flex flex-col sm:flex-row gap-4 justify-center">
               <Button size="lg" variant="secondary" asChild>
-                <Link href="/auth">
+                <Link href={user ? "/dashboard" : "/auth"}>
                   <Rocket className="mr-2 h-5 w-5" />
                   Start Free Trial
                 </Link>
