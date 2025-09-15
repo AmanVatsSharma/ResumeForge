@@ -18,5 +18,19 @@ export default defineConfig({
   build: {
     outDir: path.resolve(__dirname, "dist/public"),
     emptyOutDir: true,
+    chunkSizeWarningLimit: 1000,
+    rollupOptions: {
+      output: {
+        manualChunks: {
+          // Vendor chunks
+          'react-vendor': ['react', 'react-dom'],
+          'ui-vendor': ['@radix-ui/react-dialog', '@radix-ui/react-dropdown-menu', '@radix-ui/react-tabs'],
+          'editor-vendor': ['monaco-editor'],
+          'ai-vendor': ['@google/generative-ai', 'openai'],
+          'form-vendor': ['react-hook-form', '@hookform/resolvers', 'zod'],
+          'utils-vendor': ['framer-motion', 'lucide-react', 'class-variance-authority', 'clsx', 'tailwind-merge'],
+        },
+      },
+    },
   },
 });
