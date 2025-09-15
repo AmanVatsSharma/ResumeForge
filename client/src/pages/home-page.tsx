@@ -4,7 +4,7 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Link } from "wouter";
 import { useQuery } from "@tanstack/react-query";
 import { Resume } from "@shared/schema";
-import { FileText, Plus, Settings, Loader2 } from "lucide-react";
+import { FileText, Plus, Settings, Loader2, BarChart3, Users, Shield, Zap } from "lucide-react";
 import { PaymentDialog } from "@/components/payment-dialog";
 import { useState } from "react";
 import { ThemeToggle } from "@/components/ui/theme-toggle";
@@ -21,7 +21,12 @@ export default function HomePage() {
     <div className="min-h-screen bg-gray-50 dark:bg-gray-900">
       <header className="bg-white shadow dark:bg-gray-800 dark:shadow-gray-700/20">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-4 flex justify-between items-center">
-          <h1 className="text-2xl font-bold text-gray-900 dark:text-white">Dashboard</h1>
+          <div className="flex items-center space-x-2">
+            <div className="w-8 h-8 bg-gradient-to-r from-purple-600 to-blue-600 rounded-lg flex items-center justify-center">
+              <FileText className="h-5 w-5 text-white" />
+            </div>
+            <h1 className="text-2xl font-bold text-gray-900 dark:text-white">ResumeAI Pro Dashboard</h1>
+          </div>
           <div className="flex items-center gap-4">
             <ThemeToggle />
             <span className="text-sm text-gray-600 dark:text-gray-300">
@@ -42,6 +47,38 @@ export default function HomePage() {
       </header>
 
       <main className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
+        {/* Enterprise Features Banner */}
+        {user?.isPremium && (
+          <Card className="mb-8 bg-gradient-to-r from-purple-50 to-blue-50 dark:from-purple-900/20 dark:to-blue-900/20 border-purple-200 dark:border-purple-800">
+            <CardContent className="p-6">
+              <div className="flex items-center justify-between">
+                <div>
+                  <h2 className="text-xl font-semibold text-purple-900 dark:text-purple-100">
+                    🚀 Enterprise Features Unlocked
+                  </h2>
+                  <p className="text-purple-700 dark:text-purple-300 mt-1">
+                    Access advanced analytics, team collaboration, and AI insights
+                  </p>
+                </div>
+                <div className="flex space-x-2">
+                  <Button variant="outline" size="sm" asChild>
+                    <Link href="/analytics">
+                      <BarChart3 className="mr-1 h-4 w-4" />
+                      Analytics
+                    </Link>
+                  </Button>
+                  <Button variant="outline" size="sm" asChild>
+                    <Link href="/team">
+                      <Users className="mr-1 h-4 w-4" />
+                      Team
+                    </Link>
+                  </Button>
+                </div>
+              </div>
+            </CardContent>
+          </Card>
+        )}
+
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
           <Card>
             <CardHeader>
@@ -51,7 +88,7 @@ export default function HomePage() {
               <Button asChild className="w-full">
                 <Link href="/generator">
                   <Plus className="mr-2 h-4 w-4" />
-                  New Resume
+                  Create New Resume
                 </Link>
               </Button>
               <Button asChild variant="outline" className="w-full">
