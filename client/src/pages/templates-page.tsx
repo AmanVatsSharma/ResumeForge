@@ -24,7 +24,7 @@ import { useLocation } from "wouter";
 import { Badge } from "@/components/ui/badge";
 import { Crown } from "lucide-react";
 import { Input } from "@/components/ui/input";
-import { getTemplatesByCategory, getAllTemplateCategories, getTemplateCategory, getTemplateDescription } from "@/components/templates";
+import { TEMPLATES, TEMPLATE_CATEGORIES } from "@shared/templates";
 
 /**
  * Template interface representing a resume template
@@ -56,112 +56,16 @@ const colorThemes = {
   gray: "#6b7280",
 };
 
-/**
- * Template data for all resume templates
- */
-const templates: Template[] = [
-  {
-    id: "modern-pro",
-    name: "Modern Professional Plus",
-    description: "Enhanced modern design with customizable colors and sections",
-    premium: false,
-    preview: "modern-pro.svg",
-    colors: Object.keys(colorThemes),
-    new: true,
-  },
-  {
-    id: "elegant-1",
-    name: "Elegant Premium",
-    description: "Sophisticated design with premium styling and advanced customization",
-    premium: true,
-    preview: "elegant-premium.svg",
-    colors: ["purple", "blue", "teal", "gray"],
-    new: true,
-  },
-  {
-    id: "professional-1",
-    name: "Professional Two-Column",
-    description: "Modern two-column layout with sidebar and advanced section controls",
-    premium: true,
-    preview: "professional-column.svg",
-    colors: ["blue", "gray", "indigo", "teal"],
-    new: true,
-  },
-  {
-    id: "modern-1",
-    name: "Modern Professional",
-    description: "Clean and minimal design with bold section headers",
-    premium: false,
-    preview: "minimal-light.svg",
-  },
-  {
-    id: "executive-1",
-    name: "Executive",
-    description: "Traditional format optimized for senior positions",
-    premium: false,
-    preview: "executive-dark.svg",
-  },
-  {
-    id: "creative-1",
-    name: "Creative Portfolio",
-    description: "Unique layout for creative professionals",
-    premium: true,
-    preview: "creative-color.svg",
-    colors: ["purple", "indigo", "teal", "orange"],
-  },
-  {
-    id: "technical-1",
-    name: "Technical Specialist",
-    description: "Focused on technical skills and projects",
-    premium: true,
-    preview: "technical-grid.svg",
-    colors: ["blue", "gray", "indigo", "green"],
-  },
-  {
-    id: "academic-1",
-    name: "Academic CV",
-    description: "Detailed format for academic positions",
-    premium: true,
-    preview: "academic-formal.svg",
-  },
-  {
-    id: "startup-1",
-    name: "Startup Profile",
-    description: "Modern design for startup environments",
-    premium: true,
-    preview: "startup-modern.svg",
-    colors: ["green", "blue", "purple", "red"],
-  },
-  {
-    id: "minimal-1",
-    name: "Minimal",
-    description: "Simple and elegant design",
-    premium: false,
-    preview: "minimal-clean.svg",
-  },
-  {
-    id: "professional-2",
-    name: "Corporate Professional",
-    description: "Traditional corporate style with modern elements",
-    premium: true,
-    preview: "corporate-pro.svg",
-  },
-  {
-    id: "creative-2",
-    name: "Digital Creative",
-    description: "Modern design for digital professionals",
-    premium: true,
-    preview: "digital-creative.svg",
-    colors: ["blue", "purple", "green", "orange"],
-  },
-  {
-    id: "minimal-2",
-    name: "Clean Professional",
-    description: "Clean and professional layout",
-    premium: false,
-    preview: "clean-pro.svg",
-  }
-];
+// Build the templates list from the shared catalog
+const templates: Template[] = TEMPLATES.map((t) => ({
+  id: t.id,
+  name: t.name,
+  description: t.description,
+  premium: t.premium,
+  price: t.price,
+  category: t.category,
+  preview: t.preview || `/images/templates/${t.id}.svg`,
+}));
 
 /**
  * Templates Page Component
@@ -195,8 +99,8 @@ export default function TemplatesPage() {
     }
   }, []);
 
-  // Get all categories from the template registry
-  const categories = ["all", ...getAllTemplateCategories()];
+  // Get all categories from the shared catalog
+  const categories = ["all", ...TEMPLATE_CATEGORIES];
   
   // Filter templates based on selected category and search query
   const filteredTemplates = useMemo(() => {
@@ -422,6 +326,10 @@ export default function TemplatesPage() {
                 src={selectedTemplate?.preview} 
                 alt={selectedTemplate?.name}
                 className="h-40 object-contain border rounded-md"
+                onError={(e) => {
+                  const img = e.currentTarget as HTMLImageElement;
+                  img.src = "/images/placeholder.svg";
+                }}
               />
             </div>
           </div>
@@ -470,7 +378,7 @@ export default function TemplatesPage() {
               <div className="flex justify-between items-center">
                 <Badge className="bg-amber-500 hover:bg-amber-600">Premium</Badge>
                 <span className="text-amber-900 font-medium">
-                  ₹{(selectedPremiumTemplate?.price || 499) / 100}
+                  ₹{selectedPremiumTemplate?.price ?? 499}
                 </span>
               </div>
             </div>
@@ -520,9 +428,13 @@ function TemplateCard({ template, isFavorite, onSelect, onToggleFavorite, isPrem
       <CardContent className="p-0 relative">
         <div className="h-48 bg-gray-100 flex items-center justify-center p-4 overflow-hidden">
           <img 
-            src={template.preview} 
+            src={template.preview}
             alt={template.name}
             className="max-h-full max-w-full object-contain transition-transform group-hover:scale-105"
+            onError={(e) => {
+              const img = e.currentTarget as HTMLImageElement;
+              img.src = "/images/placeholder.svg";
+            }}
           />
           
       {template.new && (

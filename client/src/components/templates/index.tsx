@@ -6,6 +6,7 @@ import { ExecutiveTemplate } from './executive-template';
 import { ElegantTemplate } from './elegant-template';
 import { ProfessionalTemplate } from './professional-template';
 import { PremiumTemplateWatermark } from '../premium-template-watermark';
+import { TEMPLATES, TEMPLATE_MAP, type TemplateMeta, TEMPLATE_CATEGORIES } from '@shared/templates';
 
 export interface TemplateProps {
   content: ResumeContent;
@@ -123,221 +124,29 @@ export function BaseTemplate({
 }
 
 // Template registry mapping template IDs to their components and attributes
-export const templateRegistry = {
-  // Free Templates - Modern Category
-  "modern-1": {
-    name: "Modern Professional",
-    component: ModernTemplate,
-    premium: false,
-    price: 0,
-    category: "modern",
-    description: "Clean, contemporary design with customizable accent colors"
-  },
-  "modern-2": {
-    name: "Modern Minimalist",
-    component: ModernTemplate,
-    premium: false,
-    price: 0,
-    category: "modern",
-    description: "Sleek, minimalist layout with ample whitespace"
-  },
-  "modern-3": {
-    name: "Modern Tech",
-    component: ModernTemplate,
-    premium: false,
-    price: 0,
-    category: "modern",
-    description: "Perfect for technical roles with emphasis on skills section"
-  },
-  
-  // Free Templates - Creative Category
-  "creative-1": {
-    name: "Creative Classic",
-    component: CreativeTemplate,
-    premium: false,
-    price: 0,
-    category: "creative",
-    description: "Artistic template with geometric accents and dynamic styling",
-    colors: ["creative", "artistic", "minimal"]
-  },
-  "creative-2": {
-    name: "Creative Portfolio",
-    component: CreativeTemplate,
-    premium: false,
-    price: 0,
-    category: "creative",
-    description: "Showcase your creative work with style"
-  },
-  
-  // Free Templates - Professional Category
-  "professional-basic": {
-    name: "Professional Basic",
-    component: ProfessionalTemplate,
-    premium: false,
-    price: 0, 
-    category: "professional",
-    description: "Traditional resume layout optimized for ATS systems"
-  },
-  "basic-1": {
-    name: "Simple Clean",
-    component: BaseTemplate,
-    premium: false,
-    price: 0,
-    category: "basic",
-    description: "No-frills, straightforward layout that works for any industry"
-  },
-  "basic-2": {
-    name: "Entry Level",
-    component: BaseTemplate,
-    premium: false,
-    price: 0,
-    category: "basic",
-    description: "Perfect for students and early career professionals"
-  },
-  
-  // Premium Templates - Executive Category
-  "executive-1": {
-    name: "Executive Elite",
-    component: ExecutiveTemplate,
-    premium: true,
-    price: 499,
-    category: "executive",
-    description: "Sophisticated design for senior leadership positions"
-  },
-  "executive-2": {
-    name: "C-Suite",
-    component: ExecutiveTemplate,
-    premium: true,
-    price: 599,
-    category: "executive",
-    description: "Premium design for high-level executives and directors"
-  },
-  "executive-3": {
-    name: "Corporate Leadership",
-    component: ExecutiveTemplate,
-    premium: true,
-    price: 499,
-    category: "executive",
-    description: "Convey authority with this professional executive template"
-  },
-  
-  // Premium Templates - Professional Category
-  "professional-1": {
-    name: "Professional Two-Column",
-    component: ProfessionalTemplate,
-    premium: true,
-    price: 499,
-    category: "professional",
-    description: "Modern two-column layout with sidebar for skills and education"
-  },
-  "professional-2": {
-    name: "Professional Advanced",
-    component: ProfessionalTemplate,
-    premium: true,
-    price: 499,
-    category: "professional",
-    description: "Advanced layout with customizable sections and emphasis on work experience"
-  },
-  "professional-3": {
-    name: "Professional Compact",
-    component: ProfessionalTemplate,
-    premium: true,
-    price: 399,
-    category: "professional",
-    description: "Maximizes space efficiency without sacrificing readability"
-  },
-  
-  // Premium Templates - Elegant Category
-  "elegant-1": {
-    name: "Elegant Premium",
-    component: ElegantTemplate,
-    premium: true,
-    price: 599,
-    category: "elegant",
-    description: "Luxurious design with tasteful accents and refined typography"
-  },
-  "elegant-2": {
-    name: "Elegant Serif",
-    component: ElegantTemplate,
-    premium: true,
-    price: 599,
-    category: "elegant",
-    description: "Timeless elegance with classic serif typography"
-  },
-  
-  // Premium Templates - Creative Category
-  "creative-premium-1": {
-    name: "Creative Portfolio",
-    component: CreativeTemplate,
-    premium: true,
-    price: 499,
-    category: "creative",
-    description: "Premium artistic template with background patterns and timeline views",
-    colors: ["vibrant", "bold", "warm"],
-    new: true
-  },
-  "creative-premium-2": {
-    name: "Creative Designer",
-    component: CreativeTemplate,
-    premium: true,
-    price: 599,
-    category: "creative",
-    description: "Eye-catching design with custom accents and bold typography",
-    colors: ["artistic", "creative", "vibrant"],
-    new: true
-  },
-  "creative-premium-3": {
-    name: "Creative Showcase",
-    component: CreativeTemplate,
-    premium: true,
-    price: 699,
-    category: "creative",
-    description: "Unique showcase template with artistic styling and custom patterns",
-    colors: ["bold", "warm", "vibrant"]
-  },
-  
-  // Premium Templates - Specialized
-  "tech-1": {
-    name: "Tech Specialist",
-    component: ModernTemplate,
-    premium: true,
-    price: 499,
-    category: "specialized",
-    description: "Optimized for software developers and IT professionals"
-  },
-  "academic-1": {
-    name: "Academic CV",
-    component: BaseTemplate,
-    premium: true,
-    price: 499,
-    category: "specialized",
-    description: "Comprehensive layout for academic and research positions"
-  },
-  "medical-1": {
-    name: "Medical Professional",
-    component: ProfessionalTemplate,
-    premium: true,
-    price: 599,
-    category: "specialized",
-    description: "Specialized template for healthcare professionals"
-  },
-  "legal-1": {
-    name: "Legal Professional",
-    component: ElegantTemplate,
-    premium: true,
-    price: 599,
-    category: "specialized",
-    description: "Tailored for legal professionals with appropriate formatting"
-  },
-  "consulting-1": {
-    name: "Management Consultant",
-    component: ExecutiveTemplate,
-    premium: true,
-    price: 499,
-    category: "specialized",
-    description: "Strategic layout for consultants and advisors"
-  }
+const componentMap: Record<TemplateMeta["componentKey"], React.ComponentType<TemplateProps>> = {
+  base: BaseTemplate,
+  modern: ModernTemplate,
+  creative: CreativeTemplate,
+  professional: ProfessionalTemplate,
+  executive: ExecutiveTemplate,
+  elegant: ElegantTemplate,
 };
+
+// Build registry from shared catalog to ensure no duplicates and consistent pricing/metadata
+export const templateRegistry = Object.fromEntries(
+  TEMPLATES.map((t) => [
+    t.id,
+    {
+      name: t.name,
+      component: componentMap[t.componentKey] || BaseTemplate,
+      premium: t.premium,
+      price: t.price,
+      category: t.category,
+      description: t.description,
+    },
+  ])
+) as Record<string, { name: string; component: React.ComponentType<TemplateProps>; premium: boolean; price: number; category: string; description: string }>;
 
 export type TemplateId = keyof typeof templateRegistry;
 
@@ -349,49 +158,40 @@ export function getTemplateComponent(templateId: string): React.ComponentType<Te
 
 // Helper function to get template display name
 export function getTemplateName(templateId: string): string {
-  const template = templateRegistry[templateId as TemplateId];
-  return template?.name || "Basic Template";
+  const t = TEMPLATE_MAP[templateId] || undefined;
+  return t?.name || (templateRegistry[templateId as TemplateId]?.name ?? "Basic Template");
 }
 
 // Helper function to check if template is premium
 export function isTemplatePremium(templateId: string): boolean {
-  const template = templateRegistry[templateId as TemplateId];
-  return template?.premium || false;
+  const t = TEMPLATE_MAP[templateId] || undefined;
+  return t?.premium ?? (templateRegistry[templateId as TemplateId]?.premium || false);
 }
 
 // Helper function to get template price
 export function getTemplatePrice(templateId: string): number {
-  const template = templateRegistry[templateId as TemplateId];
-  return template?.price || 0;
+  const t = TEMPLATE_MAP[templateId] || undefined;
+  return t?.price ?? (templateRegistry[templateId as TemplateId]?.price || 0);
 }
 
 // Helper function to get template category
 export function getTemplateCategory(templateId: string): string {
-  const template = templateRegistry[templateId as TemplateId];
-  return template?.category || "basic";
+  const t = TEMPLATE_MAP[templateId] || undefined;
+  return t?.category ?? (templateRegistry[templateId as TemplateId]?.category || "basic");
 }
 
 // Helper function to get template description
 export function getTemplateDescription(templateId: string): string {
-  const template = templateRegistry[templateId as TemplateId];
-  return template?.description || "Basic resume template";
+  const t = TEMPLATE_MAP[templateId] || undefined;
+  return t?.description ?? (templateRegistry[templateId as TemplateId]?.description || "Basic resume template");
 }
 
 // Helper function to get all templates by category
 export function getTemplatesByCategory(category: string, premiumUser: boolean = false): TemplateId[] {
-  return Object.keys(templateRegistry).filter(id => {
-    const template = templateRegistry[id as TemplateId];
-    return template.category === category && (premiumUser || !template.premium);
-  }) as TemplateId[];
+  return (TEMPLATES.filter(t => t.category === category && (premiumUser || !t.premium)).map(t => t.id)) as TemplateId[];
 }
 
 // Helper function to get all template categories
 export function getAllTemplateCategories(): string[] {
-  const categories = new Set<string>();
-  Object.values(templateRegistry).forEach(template => {
-    if (template.category) {
-      categories.add(template.category);
-    }
-  });
-  return Array.from(categories);
+  return TEMPLATE_CATEGORIES as unknown as string[];
 } 
