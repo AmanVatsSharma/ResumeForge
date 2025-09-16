@@ -60,8 +60,8 @@ const features = [
   {
     icon: <Palette className="h-8 w-8 text-green-600" />,
     title: "Professional Templates",
-    description: "Choose from 50+ industry-specific templates designed by professional designers.",
-    highlight: "50+ templates"
+    description: "Choose from 100+ industry-specific templates designed by professional designers.",
+    highlight: "100+ templates"
   },
   {
     icon: <BarChart3 className="h-8 w-8 text-orange-600" />,
