@@ -6,6 +6,7 @@ import { insertResumeSchema } from "@shared/schema";
 import { z } from "zod";
 import { generateContent, chatWithAI } from "./ai";
 import { initiatePhonePePayment, verifyPhonePePayment } from "./payments";
+import { getTemplatePriceRupees, SUBSCRIPTION_PRICE_RUPEES } from "@shared/templates";
 import fs from "fs";
 import path from "path";
 import { GoogleGenerativeAI } from "@google/generative-ai";
@@ -391,15 +392,9 @@ export async function registerRoutes(app: Express): Promise<Server> {
       let amount = 0;
 
       if (type === "subscription") {
-        amount = 999; // ₹999 for premium subscription
+        amount = SUBSCRIPTION_PRICE_RUPEES;
       } else if (type === "template" && templateId) {
-        // Get template price based on templateId
-        const templates: Record<string, number> = {
-          "creative-1": 99,
-          "technical-1": 199,
-          "academic-1": 299,
-        };
-        amount = templates[templateId] || 99;
+        amount = getTemplatePriceRupees(templateId) || 99;
       }
 
       const payment = await initiatePhonePePayment(req.user.id, { type, amount, templateId });
